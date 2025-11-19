@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package agent;
+
+option go_package = "agent/";
+
+service WorkerAgent {
+  rpc StartJob(JobRequest) returns (Ack);
+  rpc UploadResult(JobResponse) returns (Ack);
+}
+
+message JobRequest {
+  string engine = 1;
+  string code = 2;
+}
+
+message Ack {
+  string message = 1;
+}
+
+message JobResponse {
+  string output = 1;
+  string job_id = 2;
+}
