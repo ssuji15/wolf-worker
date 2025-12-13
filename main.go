@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"regexp"
+	"time"
 
 	pb "github.com/ssuji15/wolf-worker/agent"
 
@@ -13,13 +15,16 @@ import (
 )
 
 const (
-	socketPath = "/socket/socket.sock"
-	outputPath = "/output/output.log"
+	jobDirectory = "/job"
+	socketPath   = jobDirectory + "/socket/socket.sock"
+	outputPath   = jobDirectory + "/output/output.log"
 )
 
 type WorkerAgent struct {
 	pb.UnimplementedWorkerAgentServer
 }
+
+var grpcServer *grpc.Server
 
 func main() {
 
@@ -28,7 +33,7 @@ func main() {
 		panic(err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer = grpc.NewServer()
 	pb.RegisterWorkerAgentServer(grpcServer, &WorkerAgent{})
 
 	fmt.Println("worker listening on", socketPath)
@@ -37,51 +42,75 @@ func main() {
 
 func (w *WorkerAgent) StartJob(ctx context.Context, req *pb.JobRequest) (*pb.Ack, error) {
 	go func() {
-		os.Remove(socketPath)
-		runJob(req.Engine, req.Code)
+		err := runJob(req.Engine, req.Code)
+		if err != nil {
+			os.WriteFile(outputPath, []byte(fmt.Sprintf("%v", err)), 0644)
+			os.Exit(1)
+		}
 		os.Exit(0)
 	}()
 	return &pb.Ack{Message: "ok"}, nil
 }
 
-func runJob(engine, code string) {
+func runJob(engine, code string) error {
 	src := getFileName(engine)
-	os.WriteFile(src, []byte(code), 0644)
-
 	f, _ := os.Create(outputPath)
 	f.Close()
-
 	switch engine {
 	case "c++":
-		run("g++", "-O1", "-pipe", "-g0", src, "-o", "/tmp/prog")
-		run("/tmp/prog")
-	case "java":
-		run("javac", src)
-		run("java", "-cp", "/tmp", "Program")
+		re := regexp.MustCompile(`(?m)^#include\s+<.*>$`)
+		cleanCode := re.ReplaceAllString(code, "")
+		finalCode := "#include <bits/stdc++.h>\n" + cleanCode
+		os.WriteFile(src, []byte(finalCode), 0644)
+
+		if err := run("clang++", "-O1", "-pipe", "-include-pch", "/usr/include/c++/12/bits/stdc++.h.pch", src, "-o", jobDirectory+"/prog"); err != nil {
+			return err
+		}
+		if err := run(jobDirectory + "/prog"); err != nil {
+			return err
+		}
 	default:
 		os.WriteFile(outputPath, []byte("unknown engine"), 0644)
+		return nil
 	}
+	return nil
 }
 
 func getFileName(engine string) string {
 	switch engine {
 	case "c++":
-		return "/tmp/p.cpp"
+		return jobDirectory + "/p.cpp"
 	case "java":
-		return "/tmp/p.java"
+		return jobDirectory + "/p.java"
 	default:
-		return "/tmp/p.txt"
+		return jobDirectory + "/p.txt"
 	}
 }
 
-func run(cmd string, args ...string) {
-	c := exec.Command(cmd, args...)
+func run(cmd string, args ...string) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	c := exec.CommandContext(ctx, cmd, args...)
 	out, err := c.CombinedOutput()
 
-	f, _ := os.OpenFile(outputPath, os.O_WRONLY|os.O_APPEND, 0644)
-	defer f.Close()
-	f.Write(out)
 	if err != nil {
-		f.Write([]byte(err.Error()))
+		fmt.Println("failed to execute command:", err)
+		return err
 	}
+
+	if len(out) > 1024*1024 {
+		out = out[:1024*1024]
+	}
+
+	f, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := f.Write(out); err != nil {
+		return err
+	}
+	return nil
 }
