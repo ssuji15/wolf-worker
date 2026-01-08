@@ -19,8 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WorkerAgent_StartJob_FullMethodName     = "/agent.WorkerAgent/StartJob"
-	WorkerAgent_UploadResult_FullMethodName = "/agent.WorkerAgent/UploadResult"
+	WorkerAgent_StartJob_FullMethodName = "/agent.WorkerAgent/StartJob"
 )
 
 // WorkerAgentClient is the client API for WorkerAgent service.
@@ -28,7 +27,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WorkerAgentClient interface {
 	StartJob(ctx context.Context, in *JobRequest, opts ...grpc.CallOption) (*Ack, error)
-	UploadResult(ctx context.Context, in *JobResponse, opts ...grpc.CallOption) (*Ack, error)
 }
 
 type workerAgentClient struct {
@@ -49,22 +47,11 @@ func (c *workerAgentClient) StartJob(ctx context.Context, in *JobRequest, opts .
 	return out, nil
 }
 
-func (c *workerAgentClient) UploadResult(ctx context.Context, in *JobResponse, opts ...grpc.CallOption) (*Ack, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Ack)
-	err := c.cc.Invoke(ctx, WorkerAgent_UploadResult_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // WorkerAgentServer is the server API for WorkerAgent service.
 // All implementations must embed UnimplementedWorkerAgentServer
 // for forward compatibility.
 type WorkerAgentServer interface {
 	StartJob(context.Context, *JobRequest) (*Ack, error)
-	UploadResult(context.Context, *JobResponse) (*Ack, error)
 	mustEmbedUnimplementedWorkerAgentServer()
 }
 
@@ -77,9 +64,6 @@ type UnimplementedWorkerAgentServer struct{}
 
 func (UnimplementedWorkerAgentServer) StartJob(context.Context, *JobRequest) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartJob not implemented")
-}
-func (UnimplementedWorkerAgentServer) UploadResult(context.Context, *JobResponse) (*Ack, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadResult not implemented")
 }
 func (UnimplementedWorkerAgentServer) mustEmbedUnimplementedWorkerAgentServer() {}
 func (UnimplementedWorkerAgentServer) testEmbeddedByValue()                     {}
@@ -120,24 +104,6 @@ func _WorkerAgent_StartJob_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WorkerAgent_UploadResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JobResponse)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WorkerAgentServer).UploadResult(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: WorkerAgent_UploadResult_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WorkerAgentServer).UploadResult(ctx, req.(*JobResponse))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // WorkerAgent_ServiceDesc is the grpc.ServiceDesc for WorkerAgent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -148,10 +114,6 @@ var WorkerAgent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartJob",
 			Handler:    _WorkerAgent_StartJob_Handler,
-		},
-		{
-			MethodName: "UploadResult",
-			Handler:    _WorkerAgent_UploadResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

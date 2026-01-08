@@ -117,58 +117,6 @@ func (x *Ack) GetMessage() string {
 	return ""
 }
 
-type JobResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Output        string                 `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
-	JobId         string                 `protobuf:"bytes,2,opt,name=job_id,json=jobId,proto3" json:"job_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *JobResponse) Reset() {
-	*x = JobResponse{}
-	mi := &file_agent_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *JobResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*JobResponse) ProtoMessage() {}
-
-func (x *JobResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use JobResponse.ProtoReflect.Descriptor instead.
-func (*JobResponse) Descriptor() ([]byte, []int) {
-	return file_agent_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *JobResponse) GetOutput() string {
-	if x != nil {
-		return x.Output
-	}
-	return ""
-}
-
-func (x *JobResponse) GetJobId() string {
-	if x != nil {
-		return x.JobId
-	}
-	return ""
-}
-
 var File_agent_proto protoreflect.FileDescriptor
 
 const file_agent_proto_rawDesc = "" +
@@ -179,14 +127,9 @@ const file_agent_proto_rawDesc = "" +
 	"\x06engine\x18\x01 \x01(\tR\x06engine\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\"\x1f\n" +
 	"\x03Ack\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"<\n" +
-	"\vJobResponse\x12\x16\n" +
-	"\x06output\x18\x01 \x01(\tR\x06output\x12\x15\n" +
-	"\x06job_id\x18\x02 \x01(\tR\x05jobId2h\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage28\n" +
 	"\vWorkerAgent\x12)\n" +
 	"\bStartJob\x12\x11.agent.JobRequest\x1a\n" +
-	".agent.Ack\x12.\n" +
-	"\fUploadResult\x12\x12.agent.JobResponse\x1a\n" +
 	".agent.AckB\bZ\x06agent/b\x06proto3"
 
 var (
@@ -201,19 +144,16 @@ func file_agent_proto_rawDescGZIP() []byte {
 	return file_agent_proto_rawDescData
 }
 
-var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_agent_proto_goTypes = []any{
-	(*JobRequest)(nil),  // 0: agent.JobRequest
-	(*Ack)(nil),         // 1: agent.Ack
-	(*JobResponse)(nil), // 2: agent.JobResponse
+	(*JobRequest)(nil), // 0: agent.JobRequest
+	(*Ack)(nil),        // 1: agent.Ack
 }
 var file_agent_proto_depIdxs = []int32{
 	0, // 0: agent.WorkerAgent.StartJob:input_type -> agent.JobRequest
-	2, // 1: agent.WorkerAgent.UploadResult:input_type -> agent.JobResponse
-	1, // 2: agent.WorkerAgent.StartJob:output_type -> agent.Ack
-	1, // 3: agent.WorkerAgent.UploadResult:output_type -> agent.Ack
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	1, // 1: agent.WorkerAgent.StartJob:output_type -> agent.Ack
+	1, // [1:2] is the sub-list for method output_type
+	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -230,7 +170,7 @@ func file_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_proto_rawDesc), len(file_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

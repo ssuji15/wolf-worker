@@ -6,7 +6,6 @@ option go_package = "agent/";
 
 service WorkerAgent {
   rpc StartJob(JobRequest) returns (Ack);
-  rpc UploadResult(JobResponse) returns (Ack);
 }
 
 message JobRequest {
@@ -16,9 +15,4 @@ message JobRequest {
 
 message Ack {
   string message = 1;
-}
-
-message JobResponse {
-  string output = 1;
-  string job_id = 2;
 }
